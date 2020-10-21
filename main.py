@@ -1,14 +1,20 @@
-from Card import *
+# from Card import *
+#
+# dc = DealCards()
+# dc.Deal()
+# dc.DisplayMyCards(0)
+#
+# for i in range(2):
+#     print('want to change the card? (Y-N)')
+#     ans = input()
+#     if ans == 'Y':
+#         dc.getCard(0, int(input()))
+#         dc.DisplayMyCards(0)
+# dc.evaluateHands()
+# dc.DisplayCards()
 
-dc = DealCards()
-dc.Deal()
-dc.DisplayMyCards()
+n = 1
 
-for i in range(2):
-    print('want to change the card? (Y-N)')
-    ans = input()
-    if ans == 'Y':
-        dc.getCard(int(input()))
-        dc.DisplayMyCards()
-dc.evaluateHands()
-dc.DisplayCards()
+list_1 = [1, 2, 3, 4]
+list_1 = (list_1 [n : len(list_1)]+ list_1[0:n])
+print(list_1)

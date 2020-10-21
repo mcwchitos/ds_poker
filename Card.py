@@ -51,44 +51,57 @@ class DealCards(DeckOfCards):
 
     def __init__(self):
         super().__init__()
-        self.otherPlayer0Hand = []
-        self.otherPlayer1Hand = []
-        self.otherPlayer2Hand = []
-        self.otherPlayer3Hand = []
+        self.playersHands = []
+        self.playerCoins = [1000, 1000, 1000, 1000]
+        self.bets = [0, 0, 0, 0]
+        self.bank = 0
         self.order = 0
 
     def Deal(self):
         self.setUpDeck()
         self.getHands()
-
         # self.evaluateHands()
 
-    def getHands(self):
-        for i in range(self.order, self.order + 5):
-            self.otherPlayer0Hand.append(self.deck[4 * i])
-            self.otherPlayer1Hand.append(self.deck[4 * i + 1])
-            self.otherPlayer2Hand.append(self.deck[4 * i + 2])
-            self.otherPlayer3Hand.append(self.deck[4 * i + 3])
-        self.order += 20
+    def CoinsRotate(self, n):
+        self.playerCoins = (self.playerCoins[n: len(self.playerCoins)] + self.playerCoins[0:n])
 
-    def getCard(self, i):
-        self.otherPlayer0Hand[i] = self.deck[self.order]
+    def HandsRotate(self, n):
+        self.playersHands = (self.playersHands[n: len(self.playersHands)] + self.playersHands[0:n])
+
+    def BetsRotate(self, n):
+        self.bets = (self.bets[n: len(self.bets)] + self.bets[0:n])
+
+    def getHands(self):
+        otherPlayer0Hand = []
+        otherPlayer1Hand = []
+        otherPlayer2Hand = []
+        otherPlayer3Hand = []
+        for i in range(self.order, self.order + 5):
+            otherPlayer0Hand.append(self.deck[4 * i])
+            otherPlayer1Hand.append(self.deck[4 * i + 1])
+            otherPlayer2Hand.append(self.deck[4 * i + 2])
+            otherPlayer3Hand.append(self.deck[4 * i + 3])
+        self.order += 20
+        self.playersHands.append(otherPlayer0Hand)
+        self.playersHands.append(otherPlayer1Hand)
+        self.playersHands.append(otherPlayer2Hand)
+        self.playersHands.append(otherPlayer3Hand)
+
+    def bet(self, player, amount):
+        self.playerCoins[player] -= amount
+        self.bank += amount
+
+    def getCards(self, player):
+        return self.playersHands[player]
+
+    def getCard(self, player,  i):
+        self.playersHands[player][i] = self.deck[self.order]
+        # self.otherPlayer0Hand[i] = self.deck[self.order]
         self.order += 1
 
     def DisplayMyCards(self, player):
-        if player == 1:
-            hand = self.otherPlayer0Hand
-        elif player == 2:
-            hand = self.otherPlayer1Hand
-        elif player == 3:
-            hand = self.otherPlayer2Hand
-        elif player == 4:
-            hand = self.otherPlayer3Hand
-        else:
-            print('wrong input')
-            return
         print('------ your hand ------')
-        for card in hand:
+        for card in self.playersHands[player]:
             if card.SUIT == SUIT.HEARTS.value:
                 print('\u2665', card.VALUE)
             elif card.SUIT == SUIT.SPADES.value:
@@ -99,89 +112,55 @@ class DealCards(DeckOfCards):
                 print('\u2666', card.VALUE)
 
     def DisplayCards(self):
-        print('------ opponent 9 ------')
-        for card in self.otherPlayer0Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
-
-        print('------ opponent 1 ------')
-        for card in self.otherPlayer1Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
-        print('------ opponent 2 ------')
-        for card in self.otherPlayer2Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
-
-        print('------ opponent 3 ------')
-        for card in self.otherPlayer3Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
+        for hand in self.playersHands:
+            print('---------------------------')
+            for card in hand:
+                if card.SUIT == SUIT.HEARTS.value:
+                    print('\u2665', card.VALUE)
+                elif card.SUIT == SUIT.SPADES.value:
+                    print('\u2660', card.VALUE)
+                elif card.SUIT == SUIT.CLUBS.value:
+                    print('\u2663', card.VALUE)
+                elif card.SUIT == SUIT.DIAMONDS.value:
+                    print('\u2666', card.VALUE)
 
     def evaluateHands(self):
-        sortedMy = sorted(self.otherPlayer0Hand, key=operator.attrgetter('VALUE'))
-        sorted1 = sorted(self.otherPlayer1Hand, key=operator.attrgetter('VALUE'))
-        sorted2 = sorted(self.otherPlayer2Hand, key=operator.attrgetter('VALUE'))
-        sorted3 = sorted(self.otherPlayer3Hand, key=operator.attrgetter('VALUE'))
+        sortedHands = []
+        for hand in self.playersHands:
+            sortedHands.append(sorted(hand, key=operator.attrgetter('VALUE')))
 
-        myHandEval = HandEvaluator(sortedMy)
-        hand1Eval = HandEvaluator(sorted1)
-        hand2Eval = HandEvaluator(sorted2)
-        hand3Eval = HandEvaluator(sorted3)
+        handEvals = []
+        for srtdHnd in sortedHands:
+            handEvals.append(HandEvaluator(srtdHnd))
 
-        myHand = myHandEval.EvaluateHand()
-        hand1 = hand1Eval.EvaluateHand()
-        hand2 = hand2Eval.EvaluateHand()
-        hand3 = hand3Eval.EvaluateHand()
+        finalHands = []
+        for eval in handEvals:
+            finalHands.append(eval.EvaluateHand())
 
-        if myHand > hand1 and myHand > hand2 and myHand > hand3:
+        if finalHands[0] > finalHands[1] and finalHands[0] > finalHands[2] and finalHands[0] > finalHands[3]:
             print('you win!')
-        elif hand1 > myHand and hand1 > hand2 and hand1 > hand3:
-            print('playe 1 wins')
-        elif hand2 > myHand and hand2 > hand1 and hand2 > hand3:
-            print('playe 2 wins')
-        elif hand3 > myHand and hand3 > hand2 and hand3 > hand1:
-            print('playe 3 wins')
+        elif finalHands[1] > finalHands[0] and finalHands[1] > finalHands[2] and finalHands[1] > finalHands[3]:
+            print('player 1 wins')
+        elif finalHands[2] > finalHands[0] and finalHands[2] > finalHands[1] and finalHands[2] > finalHands[3]:
+            print('player 2 wins')
+        elif finalHands[3] > finalHands[0] and finalHands[3] > finalHands[2] and finalHands[3] > finalHands[1]:
+            print('player 3 wins')
         else:
-            if myHandEval.handValue.Total > hand1Eval.handValue.Total and myHandEval.handValue.Total > hand2Eval.handValue.Total and myHandEval.handValue.Total > hand3Eval.handValue.Total:
+            if handEvals[0].handValue.Total > handEvals[1].handValue.Total and handEvals[0].handValue.Total > handEvals[2].handValue.Total and handEvals[0].handValue.Total > handEvals[3].handValue.Total:
                 print('you win')
-            elif hand1Eval.handValue.Total > myHandEval.handValue.Total and hand1Eval.handValue.Total > hand2Eval.handValue.Total and hand1Eval.handValue.Total > hand3Eval.handValue.Total:
+            elif handEvals[1].handValue.Total > handEvals[0].handValue.Total and handEvals[1].handValue.Total > handEvals[2].handValue.Total and handEvals[1].handValue.Total > handEvals[3].handValue.Total:
                 print('player 1 wins')
-            elif hand2Eval.handValue.Total > myHandEval.handValue.Total and hand2Eval.handValue.Total > hand1Eval.handValue.Total and hand2Eval.handValue.Total > hand3Eval.handValue.Total:
+            elif handEvals[2].handValue.Total > handEvals[0].handValue.Total and handEvals[2].handValue.Total > handEvals[1].handValue.Total and handEvals[2].handValue.Total > handEvals[3].handValue.Total:
                 print('player 2 wins')
-            elif hand3Eval.handValue.Total > myHandEval.handValue.Total and hand3Eval.handValue.Total > hand2Eval.handValue.Total and hand3Eval.handValue.Total > hand1Eval.handValue.Total:
+            elif handEvals[3].handValue.Total > handEvals[0].handValue.Total and handEvals[3].handValue.Total > handEvals[2].handValue.Total and handEvals[3].handValue.Total > handEvals[1].handValue.Total:
                 print('player 3 wins')
-            elif myHandEval.handValue.HighCard > hand1Eval.handValue.HighCard and myHandEval.handValue.HighCard > hand2Eval.handValue.HighCard and myHandEval.handValue.HighCard > hand3Eval.handValue.HighCard:
+            elif handEvals[0].handValue.HighCard > handEvals[1].handValue.HighCard and handEvals[0].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[0].handValue.HighCard > handEvals[3].handValue.HighCard:
                 print('you win')
-            elif hand1Eval.handValue.HighCard > myHandEval.handValue.HighCard and hand1Eval.handValue.HighCard > hand2Eval.handValue.HighCard and hand1Eval.handValue.HighCard > hand3Eval.handValue.HighCard:
+            elif handEvals[1].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[1].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[1].handValue.HighCard > handEvals[3].handValue.HighCard:
                 print('player 1 wins')
-            elif hand2Eval.handValue.HighCard > myHandEval.handValue.HighCard and hand2Eval.handValue.HighCard > hand1Eval.handValue.HighCard and hand2Eval.handValue.HighCard > hand3Eval.handValue.HighCard:
+            elif handEvals[2].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[2].handValue.HighCard > handEvals[1].handValue.HighCard and handEvals[2].handValue.HighCard > handEvals[3].handValue.HighCard:
                 print('player 2 wins')
-            elif hand3Eval.handValue.HighCard > myHandEval.handValue.HighCard and hand3Eval.handValue.HighCard > hand2Eval.handValue.HighCard and hand3Eval.handValue.HighCard > hand1Eval.handValue.HighCard:
+            elif handEvals[3].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[3].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[3].handValue.HighCard > handEvals[1].handValue.HighCard:
                 print('player 3 wins')
 
 
