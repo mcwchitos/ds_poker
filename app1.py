@@ -11,6 +11,8 @@ dc = DealCards()
 
 @app.route('/getcards')
 def getCards():
+    global dc
+
     return 'hi'
 
 
@@ -44,7 +46,7 @@ def connection():
 
 
 def start():
-    global ips
+    global ips, dc
     dc.Deal()
     my = 'http://' + request.host + '/'
     dc.DisplayMyCards(ips.index(my) + 1)

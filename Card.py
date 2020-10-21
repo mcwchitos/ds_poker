@@ -51,6 +51,7 @@ class DealCards(DeckOfCards):
 
     def __init__(self):
         super().__init__()
+        self.playersHands = []
         self.otherPlayer0Hand = []
         self.otherPlayer1Hand = []
         self.otherPlayer2Hand = []
@@ -60,6 +61,11 @@ class DealCards(DeckOfCards):
     def Deal(self):
         self.setUpDeck()
         self.getHands()
+        self.playersHands.append(self.otherPlayer0Hand)
+        self.playersHands.append(self.otherPlayer1Hand)
+        self.playersHands.append(self.otherPlayer2Hand)
+        self.playersHands.append(self.otherPlayer3Hand)
+
 
         # self.evaluateHands()
 
@@ -71,24 +77,14 @@ class DealCards(DeckOfCards):
             self.otherPlayer3Hand.append(self.deck[4 * i + 3])
         self.order += 20
 
-    def getCard(self, i):
-        self.otherPlayer0Hand[i] = self.deck[self.order]
+    def getCard(self, player,  i):
+        self.playersHands[player - 1][i] = self.deck[self.order]
+        # self.otherPlayer0Hand[i] = self.deck[self.order]
         self.order += 1
 
     def DisplayMyCards(self, player):
-        if player == 1:
-            hand = self.otherPlayer0Hand
-        elif player == 2:
-            hand = self.otherPlayer1Hand
-        elif player == 3:
-            hand = self.otherPlayer2Hand
-        elif player == 4:
-            hand = self.otherPlayer3Hand
-        else:
-            print('wrong input')
-            return
         print('------ your hand ------')
-        for card in hand:
+        for card in self.playersHands[player]:
             if card.SUIT == SUIT.HEARTS.value:
                 print('\u2665', card.VALUE)
             elif card.SUIT == SUIT.SPADES.value:
@@ -99,48 +95,18 @@ class DealCards(DeckOfCards):
                 print('\u2666', card.VALUE)
 
     def DisplayCards(self):
-        print('------ opponent 9 ------')
-        for card in self.otherPlayer0Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
+        for hand in self.playersHands:
+            for card in hand:
+                print('---------------------------')
+                if card.SUIT == SUIT.HEARTS.value:
+                    print('\u2665', card.VALUE)
+                elif card.SUIT == SUIT.SPADES.value:
+                    print('\u2660', card.VALUE)
+                elif card.SUIT == SUIT.CLUBS.value:
+                    print('\u2663', card.VALUE)
+                elif card.SUIT == SUIT.DIAMONDS.value:
+                    print('\u2666', card.VALUE)
 
-        print('------ opponent 1 ------')
-        for card in self.otherPlayer1Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
-        print('------ opponent 2 ------')
-        for card in self.otherPlayer2Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
-
-        print('------ opponent 3 ------')
-        for card in self.otherPlayer3Hand:
-            if card.SUIT == SUIT.HEARTS.value:
-                print('\u2665', card.VALUE)
-            elif card.SUIT == SUIT.SPADES.value:
-                print('\u2660', card.VALUE)
-            elif card.SUIT == SUIT.CLUBS.value:
-                print('\u2663', card.VALUE)
-            elif card.SUIT == SUIT.DIAMONDS.value:
-                print('\u2666', card.VALUE)
 
     def evaluateHands(self):
         sortedMy = sorted(self.otherPlayer0Hand, key=operator.attrgetter('VALUE'))
