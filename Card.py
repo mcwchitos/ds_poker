@@ -89,6 +89,7 @@ class DealCards(DeckOfCards):
 
     def bet(self, player, amount):
         self.playerCoins[player] -= amount
+        self.bets[player] += amount
         self.bank += amount
 
     def getCards(self, player):
@@ -138,30 +139,30 @@ class DealCards(DeckOfCards):
             finalHands.append(eval.EvaluateHand())
 
         if finalHands[0] > finalHands[1] and finalHands[0] > finalHands[2] and finalHands[0] > finalHands[3]:
-            print('you win!')
+            return 1
         elif finalHands[1] > finalHands[0] and finalHands[1] > finalHands[2] and finalHands[1] > finalHands[3]:
-            print('player 1 wins')
+            return 2
         elif finalHands[2] > finalHands[0] and finalHands[2] > finalHands[1] and finalHands[2] > finalHands[3]:
-            print('player 2 wins')
+            return 3
         elif finalHands[3] > finalHands[0] and finalHands[3] > finalHands[2] and finalHands[3] > finalHands[1]:
-            print('player 3 wins')
+            return 4
         else:
             if handEvals[0].handValue.Total > handEvals[1].handValue.Total and handEvals[0].handValue.Total > handEvals[2].handValue.Total and handEvals[0].handValue.Total > handEvals[3].handValue.Total:
-                print('you win')
+                return 1
             elif handEvals[1].handValue.Total > handEvals[0].handValue.Total and handEvals[1].handValue.Total > handEvals[2].handValue.Total and handEvals[1].handValue.Total > handEvals[3].handValue.Total:
-                print('player 1 wins')
+                return 2
             elif handEvals[2].handValue.Total > handEvals[0].handValue.Total and handEvals[2].handValue.Total > handEvals[1].handValue.Total and handEvals[2].handValue.Total > handEvals[3].handValue.Total:
-                print('player 2 wins')
+                return 3
             elif handEvals[3].handValue.Total > handEvals[0].handValue.Total and handEvals[3].handValue.Total > handEvals[2].handValue.Total and handEvals[3].handValue.Total > handEvals[1].handValue.Total:
-                print('player 3 wins')
+                return 4
             elif handEvals[0].handValue.HighCard > handEvals[1].handValue.HighCard and handEvals[0].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[0].handValue.HighCard > handEvals[3].handValue.HighCard:
-                print('you win')
+                return 1
             elif handEvals[1].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[1].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[1].handValue.HighCard > handEvals[3].handValue.HighCard:
-                print('player 1 wins')
+                return 2
             elif handEvals[2].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[2].handValue.HighCard > handEvals[1].handValue.HighCard and handEvals[2].handValue.HighCard > handEvals[3].handValue.HighCard:
-                print('player 2 wins')
+                return 3
             elif handEvals[3].handValue.HighCard > handEvals[0].handValue.HighCard and handEvals[3].handValue.HighCard > handEvals[2].handValue.HighCard and handEvals[3].handValue.HighCard > handEvals[1].handValue.HighCard:
-                print('player 3 wins')
+                return 4
 
 
 class Hand(Enum):

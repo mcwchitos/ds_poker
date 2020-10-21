@@ -1,16 +1,31 @@
-from flask import Flask, request, make_response, json
+from flask import Flask, request, make_response, json, jsonify
 from Card import DealCards, Card
+from flask_cors import CORS, cross_origin
 import requests
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 ips = []
 my = 'http://'
 turn = False
+onGoing = False
 dc = DealCards()
 dc.Deal()
 
+@app.route('/evaluateHands')
+def checkHands():
+    global ips, dc, my
+    result = dc.evaluateHands
+    isWinner = result - 1 == ips.index(my)
+    if isWinner:
+        dc.playerCoins[ips.index(my)] += dc.bank
+        for i in range(len(dc.bets)):
+            dc.bets[i] = 0
+        dc.bank = 0
+    return json.jsonify({'isWinner': isWinner, 'Amounts': dc.playerCoins})
 
-@app.route('/getcards')
+@app.route('/getCards')
 def getCards():
     global ips, dc, my
     cards = dc.getCards(ips.index(my))
@@ -21,16 +36,6 @@ def getCards():
     return json.jsonify(result)
 
 
-@app.route('/register')
-def register():
-    response = requests.get('http://127.0.0.1:5000/register')
-    if response.status_code == 400:
-        return make_response('failed', 400)
-
-    elif response.status_code == 200:
-        return make_response('succeed', 200)
-
-
 @app.route('/bank', methods=['GET'])
 def getBank():
     global dc
@@ -38,26 +43,29 @@ def getBank():
 
 
 @app.route('/changeCards', methods=['GET'])
+@cross_origin()
 def changeCards():
     global dc, my
-    indexesToChange = request.args.getlist('indexesToChange')
-    for index in indexesToChange:
-        dc.getCard(ips.index(my), index)
+    index = request.args.get('index')
+    arr = index[1:-1].split(',')
+    for ind in arr:
+        dc.getCard(ips.index(my), int(ind))
+
     cards = dc.getCards(ips.index(my))
     result = []
     for card in cards:
         result.append({'suit': card.SUIT, 'value': card.VALUE})
+    response = json.jsonify(result)
+    return response
 
-    return json.jsonify(result)
-
-
-@app.route('/isTurn', methods=['GET'])
+@app.route('/getIsTurn', methods=['GET'])
 def getIsTurn():
     global turn
     return json.jsonify(turn)
 
 
 @app.route('/connect', methods=['POST'])
+@cross_origin()
 def connection():
     global ips, turn, my
     json = request.get_json()
@@ -84,24 +92,35 @@ def connection():
 
 @app.route('/start')
 def start():
+    global onGoing
+    onGoing = True
     updateAll()
     return 'ok'
 
-
-@app.route('/updateAmount', methods=['POST'])
+@app.route('/updateAmount', methods=['GET'])
+@cross_origin()
 def updateAmount():
-    global dc, ips, my
+    global dc, ips, my, turn
     amount = request.args.get('amount')
-    dc.playerCoins[ips.index(my)] -= int(amount)
+    dc.bet(ips.index(my), int(amount))
     print(dc.playerCoins)
+    if dc.bets[0] == dc.bets[1] and dc.bets[0] == dc.bets[2] and dc.bets[0] == dc.bets[3] and dc.bets[0] != 0:
+        turn = False
+        return make_response('game over', 200)
     updateAll()
     return json.jsonify(dc.playerCoins)
+
 
 
 @app.route('/getAmounts', methods=['GET'])
 def getAmounts():
     global dc
     return json.jsonify(dc.playerCoins)
+
+@app.route('/getBets', methods=['GET'])
+def getBets():
+    global dc
+    return json.jsonify(dc.bets)
 
 
 def display():
@@ -143,8 +162,8 @@ def updateAll():
         i += 1
     return
 
-
 @app.route('/update', methods=['POST'])
+@cross_origin()
 def update():
     global dc, turn, my
     json = request.get_json()
@@ -178,12 +197,18 @@ def update():
     dc.BetsRotate(rotate)
     dc.HandsRotate(rotate)
     dc.CoinsRotate(rotate)
-
+    print(turn)
     display()
-
     return 'hi'
+
+PORT = 5511
+@app.route('/')
+def index():
+    url = 'http://127.0.0.1:5000/register'
+    requests.get(url, json=str(PORT))
+    return 'ok'
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5511, debug=True)
+    app.run(host='127.0.0.1', port=PORT, debug=True)
 
