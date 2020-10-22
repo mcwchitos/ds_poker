@@ -1,6 +1,9 @@
+import threading
+
 from flask import Flask, request, make_response, json, jsonify
 from Card import DealCards, Card
 from flask_cors import CORS, cross_origin
+from celery import *
 import requests
 
 app = Flask(__name__)
@@ -9,7 +12,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 ips = []
 my = 'http://'
 turn = False
-onGoing = False
+isEnd = False
 dc = DealCards()
 dc.Deal()
 
@@ -17,13 +20,13 @@ dc.Deal()
 def checkHands():
     global ips, dc, my
     result = dc.evaluateHands
-    isWinner = result - 1 == ips.index(my)
+    isWinner =  result - 1 == ips.index(my)
     if isWinner:
         dc.playerCoins[ips.index(my)] += dc.bank
         for i in range(len(dc.bets)):
             dc.bets[i] = 0
         dc.bank = 0
-    return json.jsonify({'isWinner': isWinner, 'Amounts': dc.playerCoins})
+    return json.jsonify({'isWinned': isWinner, 'newAmount': dc.playerCoins[ips.index(my)]})
 
 @app.route('/getCards')
 def getCards():
@@ -92,23 +95,21 @@ def connection():
 
 @app.route('/start')
 def start():
-    global onGoing
-    onGoing = True
     updateAll()
     return 'ok'
 
 @app.route('/updateAmount', methods=['GET'])
 @cross_origin()
 def updateAmount():
-    global dc, ips, my, turn
+    global dc, ips, my, turn, isEnd
     amount = request.args.get('amount')
     dc.bet(ips.index(my), int(amount))
     print(dc.playerCoins)
     if dc.bets[0] == dc.bets[1] and dc.bets[0] == dc.bets[2] and dc.bets[0] == dc.bets[3] and dc.bets[0] != 0:
         turn = False
-        return make_response('game over', 200)
+        isEnd = True
     updateAll()
-    return json.jsonify(dc.playerCoins)
+    return json.jsonify({'amounts': dc.playerCoins, 'isEnd': isEnd})
 
 
 

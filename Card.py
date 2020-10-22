@@ -1,5 +1,6 @@
 from enum import Enum
 from random import shuffle
+from celery import *
 import operator
 
 
@@ -128,11 +129,10 @@ class DealCards(DeckOfCards):
     def evaluateHands(self):
         sortedHands = []
         for hand in self.playersHands:
-            sortedHands.append(sorted(hand, key=operator.attrgetter('VALUE')))
+            sortedHands = sortCel(hand)
 
-        handEvals = []
-        for srtdHnd in sortedHands:
-            handEvals.append(HandEvaluator(srtdHnd))
+        handEvals = crtEvals(sortedHands)
+
 
         finalHands = []
         for eval in handEvals:
